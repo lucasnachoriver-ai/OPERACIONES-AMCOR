@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Operaciones AMCOR</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .estado-liberar { background-color: #d4edda; }
+    .estado-pedir { background-color: #fff3cd; }
+    .estado-error { background-color: #f8d7da; }
+    input, select, button { margin: 5px; padding: 5px; }
+    form { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>📦 Tablero de Operaciones</h1>
+
+  <!-- Formulario para agregar operaciones -->
+  <form id="formOperacion">
+    <input type="text" id="orden" placeholder="Nro. Orden" required>
+    <input type="text" id="estado" placeholder="Estado" required>
+    <input type="text" id="cliente" placeholder="Cliente" required>
+    <input type="text" id="responsable" placeholder="Responsable" required>
+    <input type="text" id="fecha" placeholder="Fecha (dd-mm-aa)" required>
+    <input type="text" id="transporte" placeholder="Transporte" required>
+    <input type="text" id="destino" placeholder="Destino">
+    <button type="submit">Agregar operación</button>
+  </form>
+
+  <!-- Filtros -->
+  <label>Buscar por Nro. Orden: <input type="text" id="buscarOrden"></label>
+  <label>Cliente:
+    <select id="filtroCliente">
+      <option value="">Todos</option>
+      <option value="AMCOR FLEXIBLES CHINA CO.">AMCOR FLEXIBLES CHINA CO.</option>
+      <option value="FOLEX">FOLEX</option>
+      <option value="PERUPLAST">PERUPLAST</option>
+      <option value="NOVA CHEMICALS/AMCOR LLC">NOVA CHEMICALS/AMCOR LLC</option>
+    </select>
+  </label>
+  <label>Transporte:
+    <select id="filtroTransporte">
+      <option value="">Todos</option>
+      <option value="AEREO">Aéreo</option>
+      <option value="MARITIMO">Marítimo</option>
+      <option value="TERRESTRE">Terrestre</option>
+      <option value="MULTIMODAL">Multimodal</option>
+    </select>
+  </label>
+
+  <!-- Tabla -->
+  <table id="tablaOperaciones">
+    <thead>
+      <tr>
+        <th>Nro. Orden</th>
+        <th>Estado</th>
+        <th>Cliente</th>
+        <th>Responsable</th>
+        <th>Fecha</th>
+        <th>Transporte</th>
+        <th>Destino</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Aquí se insertan las operaciones -->
+    </tbody>
+  </table>
+
+  <script>
+    const buscarOrden = document.getElementById("buscarOrden");
+    const filtroCliente = document.getElementById("filtroCliente");
+    const filtroTransporte = document.getElementById("filtroTransporte");
+    const tabla = document.getElementById("tablaOperaciones").getElementsByTagName("tbody")[0];
+
+    // Función para agregar operación desde formulario
+    document.getElementById("formOperacion").addEventListener("submit", function(e){
+      e.preventDefault();
+      const orden = document.getElementById("orden").value;
+      const estado = document.getElementById("estado").value.toUpperCase();
+      const cliente = document.getElementById("cliente").value;
+      const responsable = document.getElementById("responsable").value;
+      const fecha = document.getElementById("fecha").value;
+      const transporte = document.getElementById("transporte").value.toUpperCase();
+      const destino = document.getElementById("destino").value;
+
+      const row = tabla.insertRow();
+      let clase = "";
+      if (estado.includes("LIBERAR")) clase = "estado-liberar";
+      else if (estado.includes("PEDIR")) clase = "estado-pedir";
+      else if (estado.includes("FALTA")) clase = "estado-error";
+
+      row.className = clase;
+      row.innerHTML = `
+        <td>${orden}</td>
+        <td>${estado}</td>
+        <td>${cliente}</td>
+        <td>${responsable}</td>
+        <td>${fecha}</td>
+        <td>${transporte}</td>
+        <td>${destino}</td>
+      `;
+      this.reset();
+    });
+
+    // Función de filtros
+    function filtrar() {
+      const orden = buscarOrden.value.toLowerCase();
+      const cliente = filtroCliente.value;
+      const transporte = filtroTransporte.value;
+
+      for (let row of tabla.rows) {
+        const nroOrden = row.cells[0].textContent.toLowerCase();
+        const clienteRow = row.cells[2].textContent;
+        const transporteRow = row.cells[5].textContent;
+
+        const matchOrden = nroOrden.includes(orden);
+        const matchCliente = cliente === "" || clienteRow === cliente;
+        const matchTransporte = transporte === "" || transporteRow === transporte;
+
+        row.style.display = (matchOrden && matchCliente && matchTransporte) ? "" : "none";
+      }
+    }
+
+    buscarOrden.addEventListener("input", filtrar);
+    filtroCliente.addEventListener("change", filtrar);
+    filtroTransporte.addEventListener("change", filtrar);
+  </script>
+</body>
+</html>
